@@ -1,11 +1,19 @@
+// Flutter Material Design imports for UI components
 import 'package:flutter/material.dart';
-import 'package:flutter_tutorials/pages/clean_login_screen.dart';
-import 'pages/messy_login_screen.dart';
-// import 'pages/clean_login_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tutorials/home_page.dart';
+
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+     ProviderScope(child: MyApp()),
+  );
 }
+
+
+final welcomeMessageProvider=Provider<String>((ref){
+  return "⭐️ به دنیای Riverpod خوش آمدید! 🚀";
+});
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -13,12 +21,34 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Clean Code Tutorial',
+      title: 'Riverpod Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-      ),
-      home: const CleanLoginScreen(),
+      home: HomePage(),
+      // HomePage will be a ConsumerWidget since it needs to access providers
     );
   }
+}
+
+
+
+class HomePage extends ConsumerWidget{
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final welcomeMessage=ref.watch(welcomeMessageProvider);
+    // TODO: implement build
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Riverpod setup"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(welcomeMessage,style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold,),textDirection: TextDirection.rtl,)
+          ],
+        ),
+      ),
+    );
+  }
+  
 }
