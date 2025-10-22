@@ -11,10 +11,6 @@ void main() {
 }
 
 
-final welcomeMessageProvider=Provider<String>((ref){
-  return "⭐️ به دنیای Riverpod خوش آمدید! 🚀";
-});
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -31,24 +27,3 @@ class MyApp extends StatelessWidget {
 
 
 
-class HomePage extends ConsumerWidget{
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final welcomeMessage=ref.watch(welcomeMessageProvider);
-    // TODO: implement build
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Riverpod setup"),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(welcomeMessage,style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold,),textDirection: TextDirection.rtl,)
-          ],
-        ),
-      ),
-    );
-  }
-  
-}
