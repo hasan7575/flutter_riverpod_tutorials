@@ -7,49 +7,60 @@ class AsyncHomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncPosts = ref.watch(postsProvider);
-
+    final asyncPosts = ref.watch(postProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('FutureProvider & AsyncValue (ق۵)'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.invalidate(postsProvider);
-            },
-          )
+          IconButton(icon: const Icon(Icons.refresh), onPressed: () {
+            ref.invalidate(postProvider);
+          }),
         ],
       ),
       body: Center(
         child: asyncPosts.when(
-          loading: () => const CircularProgressIndicator(),
-          error: (error, stackTrace) => Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, color: Colors.red, size: 40),
-              const SizedBox(height: 10),
-              const Text('An error occurred:', style: TextStyle(color: Colors.red)),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  error.toString(),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
           data: (posts) {
-            return ListView.builder(
-              itemCount: posts.length,
-              itemBuilder: (context, index) {
-                final post = posts[index];
-                return ListTile(
-                  leading: CircleAvatar(child: Text('${post.id}')),
-                  title: Text(post.title),
-                  subtitle: Text(post.body, maxLines: 1, overflow: TextOverflow.ellipsis),
-                );
-              },
+            return Stack(
+              alignment: Alignment.topCenter,
+              children: [
+
+                if(asyncPosts.isLoading)
+                 Container(child: LinearProgressIndicator(),),
+                ListView.builder(
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(posts[index].title),
+                      subtitle: Text(
+                        posts[index].body,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      leading: CircleAvatar(
+                        child: Text(posts[index].id.toString()),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+          loading: () {
+            return const CircularProgressIndicator();
+          },
+          error: (error, stackTrace) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error, color: Colors.red, size: 50),
+                const SizedBox(height: 20),
+                const Text(
+                  'Something went wrong',
+                  style: TextStyle(fontSize: 20),
+                ),
+                const SizedBox(height: 20),
+                Text(error.toString()),
+              ],
             );
           },
         ),
