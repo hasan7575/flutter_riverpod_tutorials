@@ -6,10 +6,12 @@ import '../models/todo_model.dart';
 class TodoHomePage extends ConsumerWidget {
   final TextEditingController _textController = TextEditingController();
 
+  TodoHomePage({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print("TodoHomePage Rebuild");
     final todoList = ref.watch(todoListProvider);
-    final int completedCount = todoList.where((todo)=>todo.isCompleted).length;
     // TODO: implement build
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -22,45 +24,7 @@ class TodoHomePage extends ConsumerWidget {
       body: Column(
         children: [
           // Progress Card
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Your Progress',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$completedCount of ${todoList.length} completed',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                    ),
-                  ],
-                ),
-                CircularProgressIndicator(
-                  value: todoList.isEmpty ? 0.0 : completedCount / todoList.length,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
-                ),
-              ],
-            ),
-          ),
+         const TodoProgressCard(),
 
           // Add Task Section
           Padding(
@@ -136,6 +100,9 @@ class TodoHomePage extends ConsumerWidget {
                     ],
                   ),
                   child: ListTile(
+                    onTap: (){
+                      _shoeEditDialog(context, ref,todo);
+                    },
                     leading: Checkbox(
                       value: todo.isCompleted,
                       onChanged: (_) {
@@ -172,5 +139,87 @@ class TodoHomePage extends ConsumerWidget {
     );
   }
 
+  void _shoeEditDialog(BuildContext context, WidgetRef ref, Todo todo) {
+    final TextEditingController _editController = TextEditingController(text: todo.description);
+    showDialog(context: context, builder: (context){
+      return AlertDialog(
+        title: const Text('Edit Task'),
+        content: TextField(
+          controller: _editController,
+          decoration: const InputDecoration(hintText: 'Enter new task'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: (){
+              ref.read(todoListProvider.notifier).editTodoDescription(todo.id, _editController.text);
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ]
+      );
+    });
+  }
 
+
+}
+
+class TodoProgressCard extends ConsumerWidget {
+  const TodoProgressCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state=ref.watch(todoListProvider.select((todoList){
+      final total=todoList.length;
+      final completedCount=todoList.where((todo)=>todo.isCompleted).length;
+      return (total:total,completedCount:completedCount);
+    }));
+    print("TodoProgressCard Rebuild");
+    // TODO: implement build
+    return  Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Your Progress',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${state.completedCount} of ${state.total} completed',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              ),
+            ],
+          ),
+          CircularProgressIndicator(
+            value: state.total==0 ? 0.0 : state.completedCount / state.total,
+            backgroundColor: Colors.grey[300],
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+          ),
+        ],
+      ),
+    );
+  }
 }
